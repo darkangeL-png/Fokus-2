@@ -7,6 +7,7 @@ const btnCancelar = document.querySelector('.app__form-footer__button--cancel');
 
 const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
 let tarefaSelecionada = null;
+let LitarefaSelecionada = null;
 
 function AtualizarTarefas() {
     localStorage.setItem('tarefas', JSON.stringify(tarefas))
@@ -55,23 +56,30 @@ function criarElementoTarefa(tarefa) {
     li.append(paragrafo)
     li.append(botao)
 
-    li.onclick = () => {
+    if (tarefa.completa) {
+        li.classList.add('app__section-task-list-item-complete')
+        botao.setAttribute('disabled', true);
+    } else {
+        li.onclick = () => {
 
-        document.querySelectorAll('.app__section-task-list-item-active')
-            .forEach(elemento => {
-                elemento.classList.remove('app__section-task-list-item-active')
-        })
+            document.querySelectorAll('.app__section-task-list-item-active')
+                .forEach(elemento => {
+                    elemento.classList.remove('app__section-task-list-item-active')
+                })
 
-        if (tarefaSelecionada == tarefa) {
-            paragrafoDescricaoTarefa.textContent = "";
-            tarefaSelecionada = null
-            return
+            if (tarefaSelecionada == tarefa) {
+                paragrafoDescricaoTarefa.textContent = "";
+                tarefaSelecionada = null;
+                LitarefaSelecionada = null;
+                return
+            }
+
+            tarefaSelecionada = tarefa;
+            LitarefaSelecionada = li;
+            paragrafoDescricaoTarefa.textContent = tarefa.descricao
+
+            li.classList.add('app__section-task-list-item-active')
         }
-
-        tarefaSelecionada = tarefa;
-        paragrafoDescricaoTarefa.textContent = tarefa.descricao
-
-        li.classList.add('app__section-task-list-item-active')
     }
 
     return li;
@@ -98,3 +106,13 @@ tarefas.forEach(tarefa => {
     const ElementoTarefa = criarElementoTarefa(tarefa)
     UlTarefas.append(ElementoTarefa)
 });
+
+document.addEventListener('focoFinalizado', () => {
+    if (tarefaSelecionada && LitarefaSelecionada) {
+        LitarefaSelecionada.classList.remove('app__section-task-list-item-active');
+        LitarefaSelecionada.classList.add('app__section-task-list-item-complete');
+        LitarefaSelecionada.querySelector('button').setAttribute('disabled', true);
+        tarefaSelecionada.completa = true
+        AtualizarTarefas();
+    }
+})
